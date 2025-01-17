@@ -1,113 +1,125 @@
 /**
  * @typedef {import('../types.js').Bytes} Bytes
- * @typedef {globalThis.Uint8Array} Uint8Array
+ * @typedef {import('../types.js').PublicKey} PublicKey
+ * @typedef {import('../types.js').PrivateKey} PrivateKey
+ * @typedef {import('../types.js').Signature} Signature
+ * @typedef {import('../types.js').Signing} Signing
  */
 
-import { 
-    slh_dsa_sha2_256f as sphincs256f,
-    slh_dsa_sha2_256s as sphincs256s
-} from '@noble/post-quantum/slh-dsa';
+import { slh_dsa_sha2_256f as sphincs256f, slh_dsa_sha2_256s as sphincs256s } from '@noble/post-quantum/slh-dsa';
 import { isUint8Array } from '../utils/types.js';
+import { formatMessage } from '../utils/format.js';
 
 /**
- * Create SPHINCS+ variant with consistent error messages
- * @param {{ 
+ * Create a SPHINCS+ instance with given variant
+ * @param {{
  *   keygen: (seed: Uint8Array) => { publicKey: Uint8Array, secretKey: Uint8Array },
  *   sign: (secretKey: Uint8Array, message: Uint8Array) => Uint8Array,
  *   verify: (publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array) => boolean
- * }} impl - SPHINCS+ implementation (fast or small)
- * @returns {{
- *   generatePrivateKey: (seed?: Uint8Array) => Uint8Array,
- *   generateKeyPair: (seed?: Uint8Array) => { publicKey: Uint8Array, secretKey: Uint8Array },
- *   getPublicKey: (privateKey: Uint8Array) => Uint8Array,
- *   sign: (message: Uint8Array, secretKey: Uint8Array) => Uint8Array,
- *   verify: (signature: Uint8Array, message: Uint8Array, publicKey: Uint8Array) => boolean
- * }}
+ * }} variant - SPHINCS+ variant to use
+ * @returns {Signing} SPHINCS+ signing interface
  */
-const createSphincsVariant = (impl) => ({
+const createSphincs = (variant) => ({
     /**
-     * Generate a new private key seed
-     * @param {Uint8Array} [seed] - Optional 64-byte seed for deterministic key generation
-     * @returns {Uint8Array} Private key seed
+     * Generate a new private key
+     * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
+     * @returns {Promise<PrivateKey>} Private key
      * @throws {Error} If seed is invalid
      */
-    generatePrivateKey(seed) {
-        if (seed !== undefined && !isUint8Array(seed)) {
-            throw new Error('seed must be a Uint8Array, use utils.formatMessage() for automatic conversion');
+    async generatePrivateKey(seed) {
+        if (seed !== undefined) {
+            if (!isUint8Array(seed)) {
+                throw new Error('seed must be a Uint8Array');
+            }
+            if (seed.length !== 32) {
+                throw new Error('seed must be 32 bytes');
+            }
+            return seed;
         }
-        return seed || crypto.getRandomValues(new Uint8Array(96));
+        return crypto.getRandomValues(new Uint8Array(32));
     },
 
     /**
      * Generate a new key pair
-     * @param {Uint8Array} [seed] - Optional 64-byte seed for deterministic key generation
-     * @returns {{ publicKey: Uint8Array, secretKey: Uint8Array }} Key pair
+     * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
+     * @returns {Promise<{ publicKey: PublicKey; privateKey: PrivateKey }>} Generated key pair
      * @throws {Error} If seed is invalid
      */
-    generateKeyPair(seed) {
-        const genSeed = this.generatePrivateKey(seed);
-        return impl.keygen(genSeed);
+    async generateKeyPair(seed) {
+        const genSeed = await this.generatePrivateKey(seed);
+        const { publicKey, secretKey: privateKey } = variant.keygen(genSeed);
+        return { publicKey, privateKey };
     },
 
     /**
-     * Derive public key from private key seed
-     * @param {Uint8Array} privateKey - Private key seed
-     * @returns {Uint8Array} Public key
-     * @throws {Error} If private key seed is invalid
+     * Derive public key from private key
+     * @param {PrivateKey} privateKey - Private key
+     * @returns {Promise<PublicKey>} Public key
+     * @throws {Error} If private key is invalid
      */
-    getPublicKey(privateKey) {
+    async getPublicKey(privateKey) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return impl.keygen(privateKey).publicKey;
+        const { publicKey } = variant.keygen(privateKey);
+        return publicKey;
     },
 
     /**
      * Sign a message
-     * @param {Uint8Array} message - Message to sign
-     * @param {Uint8Array} secretKey - Secret key to sign with
-     * @returns {Uint8Array} Signature
+     * @param {Bytes} message - Message to sign
+     * @param {PrivateKey} privateKey - Private key
+     * @returns {Promise<Signature>} Signature
      * @throws {Error} If inputs are invalid
      */
-    sign(message, secretKey) {
+    async sign(message, privateKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
-        if (!isUint8Array(secretKey)) {
-            throw new Error('secretKey must be a Uint8Array, use utils.fromHex() if you have a hex string');
+        if (!isUint8Array(privateKey)) {
+            throw new Error('privateKey must be a Uint8Array');
         }
-        return impl.sign(secretKey, message);
+        return variant.sign(privateKey, formatMessage(message));
     },
 
     /**
      * Verify a signature
-     * @param {Uint8Array} signature - Signature to verify
-     * @param {Uint8Array} message - Original message
-     * @param {Uint8Array} publicKey - Public key to verify against
-     * @returns {boolean} True if signature is valid
+     * @param {Bytes} message - Original message
+     * @param {Signature} signature - Signature to verify
+     * @param {PublicKey} publicKey - Public key
+     * @returns {Promise<boolean>} True if signature is valid
      * @throws {Error} If inputs are invalid
      */
-    verify(signature, message, publicKey) {
-        if (!isUint8Array(signature)) {
-            throw new Error('signature must be a Uint8Array, use utils.fromHex() if you have a hex string');
-        }
+    async verify(message, signature, publicKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
-        if (!isUint8Array(publicKey)) {
-            throw new Error('publicKey must be a Uint8Array, use utils.fromHex() if you have a hex string');
+        if (!isUint8Array(signature)) {
+            throw new Error('signature must be a Uint8Array');
         }
-        return impl.verify(publicKey, message, signature);
+        if (!isUint8Array(publicKey)) {
+            throw new Error('publicKey must be a Uint8Array');
+        }
+        return variant.verify(publicKey, formatMessage(message), signature);
     }
 });
 
 /**
- * SLH-DSA-256 (SPHINCS+-256) signatures
+ * SPHINCS+-256 signatures (SLH-DSA-SHA2-256)
+ * Implements the {@link Signing} interface
+ * Security level: NIST Level 5 (equivalent to AES-256)
  * @namespace sphincs256
  */
 export const sphincs256 = {
-    /** Fast variant optimized for speed */
-    fast: createSphincsVariant(sphincs256f),
-    /** Small variant optimized for size */
-    small: createSphincsVariant(sphincs256s)
+    ...createSphincs(sphincs256f),
+    /**
+     * Fast variant - larger signatures but faster operations
+     * Signature size: ~30KB
+     */
+    fast: createSphincs(sphincs256f),
+    /**
+     * Small variant - smaller signatures but slower operations
+     * Signature size: ~8KB
+     */
+    small: createSphincs(sphincs256s)
 }; 
