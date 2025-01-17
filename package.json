@@ -1,11 +1,17 @@
 {
   "name": "@scintilla-network/signatures",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.4",
   "description": "Enhanced signature and key exchange functions for blockchain and crypto applications, including post-quantum algorithms",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "src/index.js",
+  "module": "src/index.js",
   "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./classic": "./src/classic/index.js",
+    "./pq": "./src/pq/index.js",
+    "./kex": "./src/kex/index.js",
+    "./utils": "./src/utils/index.js"
+  },
   "scripts": {
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
