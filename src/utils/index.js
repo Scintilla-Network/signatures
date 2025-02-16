@@ -8,6 +8,24 @@ import { toJSON, fromJSON } from './json.js';
 import { toUtf8, fromUtf8 } from './utf8.js';
 import { formatMessage, formatMessageHash } from './format.js';
 import { isHexString, isUint8Array } from './types.js';
+import { mod } from './mod.js';
+import {
+    numberToBytesBE,
+    numberToBytesLE,
+    bytesToNumberBE,
+    bytesToNumberLE,
+    concatBytes,
+    equalBytes
+} from './bytes.js';
+import {
+    isPositiveBigInt,
+    inRange,
+    assertInRange,
+    bitLength,
+    getBit,
+    setBit,
+    bitMask
+} from './number.js';
 
 /**
  * Convert bytes to/from various formats
@@ -90,7 +108,117 @@ export const utils = {
      * @param {unknown} value - Value to check
      * @returns {boolean} True if Uint8Array
      */
-    isUint8Array
+    isUint8Array,
+
+    /**
+     * Modulo operation
+     * @param {number} a - First operand
+     * @param {number} b - Second operand
+     * @returns {number} Result of modulo operation
+     */
+    mod,
+
+    /**
+     * Convert number to big-endian bytes
+     * @param {number|bigint} n - Number to convert
+     * @param {number} length - Number of bytes
+     * @returns {Uint8Array} Big-endian bytes
+     */
+    numberToBytesBE,
+
+    /**
+     * Convert number to little-endian bytes
+     * @param {number|bigint} n - Number to convert
+     * @param {number} length - Number of bytes
+     * @returns {Uint8Array} Little-endian bytes
+     */
+    numberToBytesLE,
+
+    /**
+     * Convert big-endian bytes to number
+     * @param {Uint8Array} bytes - Bytes to convert
+     * @returns {bigint} Resulting number
+     */
+    bytesToNumberBE,
+
+    /**
+     * Convert little-endian bytes to number
+     * @param {Uint8Array} bytes - Bytes to convert
+     * @returns {bigint} Resulting number
+     */
+    bytesToNumberLE,
+
+    /**
+     * Concatenate multiple byte arrays
+     * @param {...Uint8Array} arrays - Arrays to concatenate
+     * @returns {Uint8Array} Concatenated array
+     */
+    concatBytes,
+
+    /**
+     * Compare two byte arrays in constant time
+     * @param {Uint8Array} a - First array
+     * @param {Uint8Array} b - Second array
+     * @returns {boolean} True if arrays are equal
+     */
+    equalBytes,
+
+    /**
+     * Check if value is a positive bigint
+     * @param {unknown} n - Value to check
+     * @returns {boolean} True if value is a positive bigint
+     */
+    isPositiveBigInt,
+
+    /**
+     * Check if number is in range [min, max)
+     * @param {bigint} n - Number to check
+     * @param {bigint} min - Minimum value (inclusive)
+     * @param {bigint} max - Maximum value (exclusive)
+     * @returns {boolean} True if number is in range
+     */
+    inRange,
+
+    /**
+     * Assert that number is in range [min, max)
+     * @param {string} name - Name of value for error message
+     * @param {bigint} n - Number to check
+     * @param {bigint} min - Minimum value (inclusive)
+     * @param {bigint} max - Maximum value (exclusive)
+     * @throws {Error} If number is not in range
+     */
+    assertInRange,
+
+    /**
+     * Calculate number of bits in a bigint
+     * @param {bigint} n - Number to check
+     * @returns {number} Number of bits
+     */
+    bitLength,
+
+    /**
+     * Get bit at position
+     * @param {bigint} n - Number to check
+     * @param {number} pos - Bit position (0-based)
+     * @returns {bigint} Bit value (0n or 1n)
+     */
+    getBit,
+
+    /**
+     * Set bit at position
+     * @param {bigint} n - Number to modify
+     * @param {number} pos - Bit position (0-based)
+     * @param {boolean} value - Bit value
+     * @returns {bigint} Modified number
+     */
+    setBit,
+
+    /**
+     * Create bit mask of n bits
+     * @param {number} n - Number of bits
+     * @returns {bigint} Bit mask
+     */
+    bitMask
 };
 
 // Re-export individual utilities
@@ -104,7 +232,21 @@ export {
     formatMessage,
     formatMessageHash,
     isHexString,
-    isUint8Array
+    isUint8Array,
+    mod,
+    numberToBytesBE,
+    numberToBytesLE,
+    bytesToNumberBE,
+    bytesToNumberLE,
+    concatBytes,
+    equalBytes,
+    isPositiveBigInt,
+    inRange,
+    assertInRange,
+    bitLength,
+    getBit,
+    setBit,
+    bitMask
 };
 
 export default utils; 

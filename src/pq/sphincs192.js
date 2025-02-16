@@ -13,8 +13,8 @@ import { formatMessage } from '../utils/format.js';
 /**
  * Create a SPHINCS+ instance with given variant
  * @param {{
- *   keygen: (seed: Uint8Array) => { publicKey: Uint8Array, secretKey: Uint8Array },
- *   sign: (secretKey: Uint8Array, message: Uint8Array) => Uint8Array,
+ *   keygen: (seed: Uint8Array) => { publicKey: Uint8Array, privateKey: Uint8Array },
+ *   sign: (privateKey: Uint8Array, message: Uint8Array) => Uint8Array,
  *   verify: (publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array) => boolean
  * }} variant - SPHINCS+ variant to use
  * @returns {Signing} SPHINCS+ signing interface
@@ -22,31 +22,31 @@ import { formatMessage } from '../utils/format.js';
 const createSphincs = (variant) => ({
     /**
      * Generate a new private key
-     * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<PrivateKey>} Private key
+     * @param {Bytes} [seed] - Optional 72-byte seed for deterministic key generation
+     * @returns {PrivateKey} Private key
      * @throws {Error} If seed is invalid
      */
-    async generatePrivateKey(seed) {
+    generatePrivateKey(seed) {
         if (seed !== undefined) {
             if (!isUint8Array(seed)) {
                 throw new Error('seed must be a Uint8Array');
             }
-            if (seed.length !== 32) {
-                throw new Error('seed must be 32 bytes');
+            if (seed.length !== 72) {
+                throw new Error('seed must be 72 bytes');
             }
             return seed;
         }
-        return crypto.getRandomValues(new Uint8Array(32));
+        return crypto.getRandomValues(new Uint8Array(72));
     },
 
     /**
      * Generate a new key pair
-     * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<{ publicKey: PublicKey; privateKey: PrivateKey }>} Generated key pair
+     * @param {Bytes} [seed] - Optional 72-byte seed for deterministic key generation
+     * @returns {{ publicKey: PublicKey; privateKey: PrivateKey }} Generated key pair
      * @throws {Error} If seed is invalid
      */
-    async generateKeyPair(seed) {
-        const genSeed = await this.generatePrivateKey(seed);
+    generateKeyPair(seed) {
+        const genSeed = this.generatePrivateKey(seed);
         const { publicKey, secretKey: privateKey } = variant.keygen(genSeed);
         return { publicKey, privateKey };
     },
@@ -54,10 +54,10 @@ const createSphincs = (variant) => ({
     /**
      * Derive public key from private key
      * @param {PrivateKey} privateKey - Private key
-     * @returns {Promise<PublicKey>} Public key
+     * @returns {PublicKey} Public key
      * @throws {Error} If private key is invalid
      */
-    async getPublicKey(privateKey) {
+    getPublicKey(privateKey) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
@@ -69,10 +69,10 @@ const createSphincs = (variant) => ({
      * Sign a message
      * @param {Bytes} message - Message to sign
      * @param {PrivateKey} privateKey - Private key
-     * @returns {Promise<Signature>} Signature
+     * @returns {Signature} Signature
      * @throws {Error} If inputs are invalid
      */
-    async sign(message, privateKey) {
+    sign(message, privateKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
@@ -84,13 +84,13 @@ const createSphincs = (variant) => ({
 
     /**
      * Verify a signature
-     * @param {Bytes} message - Original message
      * @param {Signature} signature - Signature to verify
+     * @param {Bytes} message - Original message
      * @param {PublicKey} publicKey - Public key
-     * @returns {Promise<boolean>} True if signature is valid
+     * @returns {boolean} True if signature is valid
      * @throws {Error} If inputs are invalid
      */
-    async verify(message, signature, publicKey) {
+    verify(signature, message, publicKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }

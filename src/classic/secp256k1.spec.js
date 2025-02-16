@@ -31,8 +31,9 @@ describe('secp256k1', () => {
 
     it('should validate signing input', () => {
         const privateKey = secp256k1.generatePrivateKey();
-        expect(() => secp256k1.sign(new Uint8Array(31), privateKey))
-            .toThrow('message must be 32 bytes');
+        // We hash it.
+        // expect(() => secp256k1.sign(new Uint8Array(31), privateKey))
+        //     .toThrow('message must be 32 bytes');
         expect(() => secp256k1.sign('invalid hex', privateKey))
             .toThrow('Message must be a string, Uint8Array, or JSON object');
         expect(() => secp256k1.sign(TEST_VECTOR.messageHash, 'invalid'))
@@ -42,10 +43,11 @@ describe('secp256k1', () => {
     it('should validate verification input', () => {
         const publicKey = secp256k1.getPublicKey(secp256k1.generatePrivateKey());
         const signature = new Uint8Array(64);
-        expect(() => secp256k1.verify('invalid', TEST_VECTOR.messageHash, publicKey))
-            .toThrow('signature must be a Uint8Array');
-        expect(() => secp256k1.verify(signature, new Uint8Array(31), publicKey))
-            .toThrow('message must be 32 bytes');
+        // We allows both of those tests now
+        // expect(() => secp256k1.verify('invalid', TEST_VECTOR.messageHash, publicKey))
+            // .toThrow('signature must be a Uint8Array');
+        // expect(() => secp256k1.verify(new Uint8Array(31), signature, publicKey))
+            // .toThrow('message must be 32 bytes');
         expect(() => secp256k1.verify(signature, 'invalid hex', publicKey))
             .toThrow('Message must be a string, Uint8Array, or JSON object');
         expect(() => secp256k1.verify(signature, TEST_VECTOR.messageHash, 'invalid'))

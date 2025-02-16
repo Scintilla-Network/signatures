@@ -1,3 +1,4 @@
+import { sphincs256 } from '../pq/index.js';
 import { fromHex } from '../utils/hex.js';
 
 export const TEST_VECTOR = {
@@ -10,6 +11,9 @@ export const TEST_VECTOR = {
     kyberSeed: fromHex('0123456789abcdeffedcba98765432100123456789abcdeffedcba98765432100123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210'),
     // SPHINCS-192 requires 72-byte seed (144 hex chars)
     sphincs192Seed: fromHex('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f4041424344454647'),
+    // SPHINCS-192 requires 32-byte seed (64 hex chars)
+    // sphincs192Seed: fromHex('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f'),
+    // sphincs256Seed: fromHex('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f'),
     // SPHINCS-256 requires 96-byte seed (192 hex chars)
     sphincs256Seed: fromHex('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f'),
     // Ed25519 seed (32 bytes)

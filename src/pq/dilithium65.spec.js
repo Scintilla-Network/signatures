@@ -5,11 +5,11 @@ import { TEST_VECTOR } from '../test/vectors.js';
 describe('ML-DSA (Dilithium)', () => {
     describe('dilithium65', () => {
         it('should sign and verify', () => {
-            const { secretKey, publicKey } = dilithium65.generateKeyPair(TEST_VECTOR.dilithiumSeed);
-            expect(secretKey).toBeInstanceOf(Uint8Array);
+            const { privateKey, publicKey } = dilithium65.generateKeyPair(TEST_VECTOR.dilithiumSeed);
+            expect(privateKey).toBeInstanceOf(Uint8Array);
             expect(publicKey).toBeInstanceOf(Uint8Array);
             
-            const signature = dilithium65.sign(TEST_VECTOR.message, secretKey);
+            const signature = dilithium65.sign(TEST_VECTOR.message, privateKey);
             expect(signature).toBeInstanceOf(Uint8Array);
             
             const isValid = dilithium65.verify(signature, TEST_VECTOR.message, publicKey);
@@ -22,11 +22,11 @@ describe('ML-DSA (Dilithium)', () => {
         });
 
         it('should validate signing input', () => {
-            const { secretKey } = dilithium65.generateKeyPair();
-            expect(() => dilithium65.sign('invalid', secretKey))
+            const { privateKey } = dilithium65.generateKeyPair();
+            expect(() => dilithium65.sign('invalid', privateKey))
                 .toThrow('message must be a Uint8Array');
             expect(() => dilithium65.sign(TEST_VECTOR.message, 'invalid'))
-                .toThrow('secretKey must be a Uint8Array');
+                .toThrow('privateKey must be a Uint8Array');
         });
 
         it('should validate verification input', () => {
@@ -43,11 +43,11 @@ describe('ML-DSA (Dilithium)', () => {
 
         // Test key and signature sizes
         it('should generate correct size outputs', () => {
-            const { secretKey, publicKey } = dilithium65.generateKeyPair();
+            const { privateKey, publicKey } = dilithium65.generateKeyPair();
             expect(publicKey.length).toBe(TEST_VECTOR.dilithium65.publicKeySize);
-            expect(secretKey.length).toBe(TEST_VECTOR.dilithium65.secretKeySize);
+            expect(privateKey.length).toBe(TEST_VECTOR.dilithium65.secretKeySize);
 
-            const signature = dilithium65.sign(TEST_VECTOR.message, secretKey);
+            const signature = dilithium65.sign(TEST_VECTOR.message, privateKey);
             expect(signature.length).toBe(TEST_VECTOR.dilithium65.signatureSize);
         });
     }); 

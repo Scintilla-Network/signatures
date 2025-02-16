@@ -10,6 +10,8 @@ import { bls12_381 as bls } from '@noble/curves/bls12-381';
 import { isUint8Array } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 
+// Export ProjectivePoint for external use
+
 /**
  * BLS signatures on BLS12-381 curve (Boneh-Lynn-Shacham)
  * Implements the {@link Signing} interface
@@ -19,10 +21,10 @@ export const bls12_381 = {
     /**
      * Generate a new private key
      * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<PrivateKey>} 32-byte private key
+     * @returns {PrivateKey} 32-byte private key
      * @throws {Error} If seed is invalid
      */
-    async generatePrivateKey(seed) {
+    generatePrivateKey(seed) {
         if (seed !== undefined) {
             if (!isUint8Array(seed)) {
                 throw new Error('seed must be a Uint8Array');
@@ -38,22 +40,22 @@ export const bls12_381 = {
     /**
      * Generate a new key pair
      * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<{ publicKey: PublicKey; privateKey: PrivateKey }>} Generated key pair
+     * @returns {{ publicKey: PublicKey; privateKey: PrivateKey }} Generated key pair
      * @throws {Error} If seed is invalid
      */
-    async generateKeyPair(seed) {
-        const privateKey = await this.generatePrivateKey(seed);
-        const publicKey = await this.getPublicKey(privateKey);
+    generateKeyPair(seed) {
+        const privateKey = this.generatePrivateKey(seed);
+        const publicKey = this.getPublicKey(privateKey);
         return { publicKey, privateKey };
     },
 
     /**
      * Derive public key from private key
      * @param {PrivateKey} privateKey - 32-byte private key
-     * @returns {Promise<PublicKey>} 48-byte public key
+     * @returns {PublicKey} 48-byte public key
      * @throws {Error} If private key is invalid
      */
-    async getPublicKey(privateKey) {
+    getPublicKey(privateKey) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
@@ -64,10 +66,10 @@ export const bls12_381 = {
      * Sign a message
      * @param {Bytes} message - Message to sign
      * @param {PrivateKey} privateKey - 32-byte private key
-     * @returns {Promise<Signature>} 96-byte signature
+     * @returns {Signature} 96-byte signature
      * @throws {Error} If inputs are invalid
      */
-    async sign(message, privateKey) {
+    sign(message, privateKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
@@ -79,13 +81,13 @@ export const bls12_381 = {
 
     /**
      * Verify a signature
-     * @param {Bytes} message - Original message
      * @param {Signature} signature - 96-byte signature to verify
+     * @param {Bytes} message - Original message
      * @param {PublicKey} publicKey - 48-byte public key
-     * @returns {Promise<boolean>} True if signature is valid
+     * @returns {boolean} True if signature is valid
      * @throws {Error} If inputs are invalid
      */
-    async verify(message, signature, publicKey) {
+    verify(signature, message, publicKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
@@ -96,5 +98,37 @@ export const bls12_381 = {
             throw new Error('publicKey must be a Uint8Array');
         }
         return bls.verify(signature, formatMessage(message), publicKey);
+    },
+
+    /**
+     * Aggregate signatures
+     * @param {Signature[]} signatures - Array of 96-byte signatures to aggregate
+     * @returns {Signature} 96-byte aggregated signature
+     * @throws {Error} If inputs are invalid
+     */
+    aggregateSignatures(signatures) {
+        if (!Array.isArray(signatures)) {
+            throw new Error('signatures must be an array');
+        }
+        if (signatures.some(sig => !isUint8Array(sig))) {
+            throw new Error('all signatures must be Uint8Array');
+        }
+        return bls.aggregateSignatures(signatures);
+    },
+
+    /**
+     * Aggregate public keys
+     * @param {PublicKey[]} publicKeys - Array of 48-byte public keys to aggregate
+     * @returns {PublicKey} 48-byte aggregated public key
+     * @throws {Error} If inputs are invalid
+     */
+    aggregatePublicKeys(publicKeys) {
+        if (!Array.isArray(publicKeys)) {
+            throw new Error('publicKeys must be an array');
+        }
+        if (publicKeys.some(key => !isUint8Array(key))) {
+            throw new Error('all public keys must be Uint8Array');
+        }
+        return bls.aggregatePublicKeys(publicKeys);
     }
 }; 

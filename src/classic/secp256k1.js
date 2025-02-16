@@ -11,19 +11,66 @@ import { isUint8Array, isHexString } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 import { toHex, fromHex } from '../utils/hex.js';
 
+// Export ProjectivePoint for external use
+export const ProjectivePoint = secp.ProjectivePoint;
+
+// Export curve parameters
+export const CURVE = secp.CURVE;
+
+/**
+ * Utility function to get compact bytes representation
+ * @param {Uint8Array} key - The public key to compress
+ * @returns {Uint8Array} Compressed public key
+ */
+export const toCompactBytes = (key) => {
+    const point = ProjectivePoint.fromHex(key);
+    return point.toRawBytes(true);
+};
+
 /**
  * ECDSA with secp256k1 curve (Bitcoin's signature scheme)
  * Implements the {@link Signing} interface
  * @namespace secp256k1
  */
 export const secp256k1 = {
+    ProjectivePoint,
+    CURVE: secp.CURVE,
+    /**
+     * Check if a value is a valid private key
+     * @param {Uint8Array} privateKey - Value to check
+     * @returns {boolean} True if value is a valid private key
+     */
+    isValidPrivateKey(privateKey) {
+        if (!isUint8Array(privateKey)) return false;
+        if (privateKey.length !== 32) return false;
+        try {
+            return secp.utils.isValidPrivateKey(privateKey);
+        } catch {
+            return false;
+        }
+    },
+
+    /**
+     * Check if a value is a valid public key
+     * @param {Uint8Array} publicKey - Value to check
+     * @returns {boolean} True if value is a valid public key
+     */
+    isValidPublicKey(publicKey) {
+        if (!isUint8Array(publicKey)) return false;
+        try {
+            return ProjectivePoint.fromHex(publicKey) instanceof ProjectivePoint;
+        } catch {
+            return false;
+        }
+    },
+
     /**
      * Generate a new private key
      * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<PrivateKey>} 32-byte private key
+     * @returns {PrivateKey} 32-byte private key
      * @throws {Error} If seed is invalid
      */
-    async generatePrivateKey(seed) {
+    generatePrivateKey(seed) {
         if (seed !== undefined) {
             if (!isUint8Array(seed)) {
                 throw new Error('seed must be a Uint8Array');
@@ -51,10 +98,10 @@ export const secp256k1 = {
     /**
      * Derive public key from private key
      * @param {PrivateKey} privateKey - 32-byte private key
-     * @returns {Promise<PublicKey>} 33-byte compressed public key
+     * @returns {PublicKey} 33-byte compressed public key
      * @throws {Error} If private key is invalid
      */
-    async getPublicKey(privateKey) {
+    getPublicKey(privateKey) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
@@ -65,10 +112,10 @@ export const secp256k1 = {
      * Sign a message
      * @param {Bytes} message - Message to sign (will be hashed if not 32 bytes)
      * @param {PrivateKey} privateKey - 32-byte private key
-     * @returns {Promise<Signature>} 64-byte signature
+     * @returns {Signature} 64-byte signature
      * @throws {Error} If inputs are invalid
      */
-    async sign(message, privateKey) {
+    sign(message, privateKey) {
         try {
             if (!(message instanceof Uint8Array || typeof message === 'string' || (message && typeof message === 'object' && !Array.isArray(message) && Object.keys(message).length > 0))) {
                 throw new Error('Message must be a string, Uint8Array, or JSON object');
@@ -91,13 +138,13 @@ export const secp256k1 = {
 
     /**
      * Verify a signature
-     * @param {Bytes} message - Original message (will be hashed if not 32 bytes)
      * @param {Signature} signature - 64-byte signature to verify
+     * @param {Bytes} message - Original message (will be hashed if not 32 bytes)
      * @param {PublicKey} publicKey - 33-byte public key
-     * @returns {Promise<boolean>} True if signature is valid
+     * @returns {boolean} True if signature is valid
      * @throws {Error} If inputs are invalid
      */
-    async verify(message, signature, publicKey) {
+    verify(signature, message, publicKey) {
         try {
             if (!isUint8Array(signature)) {
                 throw new Error('signature must be a Uint8Array');

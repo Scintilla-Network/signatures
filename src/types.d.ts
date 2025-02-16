@@ -3,18 +3,24 @@ export type PublicKey = Bytes;
 export type PrivateKey = Bytes;
 export type Signature = Bytes;
 export type SharedSecret = Bytes;
+export type ProjectivePoint = any;
+export type ExtendedPoint = any;
+
 
 export interface KeyGeneration {
-    generatePrivateKey(seed?: Bytes): Promise<PrivateKey>;
-    generateKeyPair(seed?: Bytes): Promise<{ publicKey: PublicKey; privateKey: PrivateKey }>;
-    getPublicKey(privateKey: PrivateKey): Promise<PublicKey>;
+    generatePrivateKey(seed?: Bytes): PrivateKey;
+    generateKeyPair(seed?: Bytes): { publicKey: PublicKey; privateKey: PrivateKey };
+    getPublicKey(privateKey: PrivateKey): PublicKey;
 }
 
 export interface Signing extends KeyGeneration {
-    sign(message: Bytes, privateKey: PrivateKey): Promise<Signature>;
-    verify(message: Bytes, signature: Signature, publicKey: PublicKey): Promise<boolean>;
+    // ProjectivePoint and ExtendedPoint are optional, depending on the curve
+    ProjectivePoint?: any;
+    ExtendedPoint?: any;
+    sign(message: Bytes, privateKey: PrivateKey): Signature;
+    verify(signature: Signature, message: Bytes, publicKey: PublicKey): boolean;
 }
 
 export interface KeyExchange extends KeyGeneration {
-    deriveSharedSecret(privateKey: PrivateKey, peerPublicKey: PublicKey): Promise<SharedSecret>;
+    deriveSharedSecret(privateKey: PrivateKey, peerPublicKey: PublicKey): SharedSecret;
 } 

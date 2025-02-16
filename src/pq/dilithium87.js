@@ -20,10 +20,10 @@ export const dilithium87 = {
     /**
      * Generate a new private key
      * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<PrivateKey>} Private key
+     * @returns {PrivateKey} Private key
      * @throws {Error} If seed is invalid
      */
-    async generatePrivateKey(seed) {
+    generatePrivateKey(seed) {
         if (seed !== undefined) {
             if (!isUint8Array(seed)) {
                 throw new Error('seed must be a Uint8Array');
@@ -39,11 +39,11 @@ export const dilithium87 = {
     /**
      * Generate a new key pair
      * @param {Bytes} [seed] - Optional 32-byte seed for deterministic key generation
-     * @returns {Promise<{ publicKey: PublicKey; privateKey: PrivateKey }>} Generated key pair
+     * @returns {{ publicKey: PublicKey; privateKey: PrivateKey }} Generated key pair
      * @throws {Error} If seed is invalid
      */
-    async generateKeyPair(seed) {
-        const genSeed = await this.generatePrivateKey(seed);
+    generateKeyPair(seed) {
+        const genSeed = this.generatePrivateKey(seed);
         const { publicKey, secretKey: privateKey } = ml_dsa87.keygen(genSeed);
         return { publicKey, privateKey };
     },
@@ -51,10 +51,10 @@ export const dilithium87 = {
     /**
      * Derive public key from private key
      * @param {PrivateKey} privateKey - Private key
-     * @returns {Promise<PublicKey>} Public key
+     * @returns {PublicKey} Public key
      * @throws {Error} If private key is invalid
      */
-    async getPublicKey(privateKey) {
+    getPublicKey(privateKey) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
@@ -66,10 +66,10 @@ export const dilithium87 = {
      * Sign a message
      * @param {Bytes} message - Message to sign
      * @param {PrivateKey} privateKey - Private key
-     * @returns {Promise<Signature>} Signature
+     * @returns {Signature} Signature
      * @throws {Error} If inputs are invalid
      */
-    async sign(message, privateKey) {
+    sign(message, privateKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
@@ -81,13 +81,13 @@ export const dilithium87 = {
 
     /**
      * Verify a signature
-     * @param {Bytes} message - Original message
      * @param {Signature} signature - Signature to verify
+     * @param {Bytes} message - Original message
      * @param {PublicKey} publicKey - Public key
-     * @returns {Promise<boolean>} True if signature is valid
+     * @returns {boolean} True if signature is valid
      * @throws {Error} If inputs are invalid
      */
-    async verify(message, signature, publicKey) {
+    verify(signature, message, publicKey) {
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }

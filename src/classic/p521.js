@@ -6,11 +6,58 @@
 import { p521 as noble } from '@noble/curves/p521';
 import { isUint8Array } from '../utils/types.js';
 
+// Export ProjectivePoint for external use
+export const ProjectivePoint = noble.ProjectivePoint;
+
+// Export curve parameters
+export const CURVE = noble.CURVE;
+
+/**
+ * Utility function to get compact bytes representation
+ * @param {Uint8Array} key - The public key to compress
+ * @returns {Uint8Array} Compressed public key
+ */
+export const toCompactBytes = (key) => {
+    const point = ProjectivePoint.fromHex(key);
+    return point.toRawBytes(true);
+};
+
 /**
  * NIST P-521 signatures
  * @namespace p521
  */
 export const p521 = {
+    ProjectivePoint,
+    CURVE,
+    /**
+     * Check if a value is a valid private key
+     * @param {Uint8Array} privateKey - Value to check
+     * @returns {boolean} True if value is a valid private key
+     */
+    isValidPrivateKey(privateKey) {
+        if (!isUint8Array(privateKey)) return false;
+        if (privateKey.length !== 66) return false;
+        try {
+            return noble.utils.isValidPrivateKey(privateKey);
+        } catch {
+            return false;
+        }
+    },
+
+    /**
+     * Check if a value is a valid public key
+     * @param {Uint8Array} publicKey - Value to check
+     * @returns {boolean} True if value is a valid public key
+     */
+    isValidPublicKey(publicKey) {
+        if (!isUint8Array(publicKey)) return false;
+        try {
+            return ProjectivePoint.fromHex(publicKey) instanceof ProjectivePoint;
+        } catch {
+            return false;
+        }
+    },
+
     /**
      * Generate a new private key
      * @param {Uint8Array} [seed] - Optional 66-byte seed for deterministic key generation

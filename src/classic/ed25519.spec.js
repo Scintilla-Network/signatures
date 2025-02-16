@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ed25519 } from './ed25519.js';
+import { utils } from '../utils/index.js';
 
 const TEST_VECTOR = {
     message: new Uint8Array([116, 101, 115, 116]), // UTF-8 encoded "test"
@@ -22,8 +23,8 @@ describe('ed25519', () => {
 
     it('should sign and verify with string message', () => {
         const { privateKey, publicKey } = ed25519.generateKeyPair(TEST_VECTOR.ed25519Seed);
-        const signature = ed25519.sign(TEST_VECTOR.messageString, privateKey);
-        const isValid = ed25519.verify(signature, TEST_VECTOR.messageString, publicKey);
+        const signature = ed25519.sign(utils.formatMessage(TEST_VECTOR.messageString), privateKey);
+        const isValid = ed25519.verify(signature, utils.formatMessage(TEST_VECTOR.messageString), publicKey);
         expect(isValid).toBe(true);
     });
 
@@ -37,11 +38,11 @@ describe('ed25519', () => {
     it('should validate signing input', () => {
         const { privateKey } = ed25519.generateKeyPair();
         expect(() => ed25519.sign({}, privateKey))
-            .toThrow('Message must be a string, Uint8Array, or JSON object');
+            .toThrow('Message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         expect(() => ed25519.sign(TEST_VECTOR.message, 'invalid'))
             .toThrow('privateKey must be a Uint8Array');
         expect(() => ed25519.sign(TEST_VECTOR.message, new Uint8Array(31)))
-            .toThrow('privateKey must be 32 bytes');
+            .toThrow('private key of length 32 expected, got 31');
     });
 
     it('should validate verification input', () => {
@@ -49,15 +50,15 @@ describe('ed25519', () => {
         const signature = new Uint8Array(64);
 
         expect(() => ed25519.verify('invalid', TEST_VECTOR.message, publicKey))
-            .toThrow('signature must be a Uint8Array');
+            .toThrow('Signature must be a Uint8Array');
         expect(() => ed25519.verify(signature, {}, publicKey))
-            .toThrow('Message must be a string, Uint8Array, or JSON object');
+            .toThrow('Message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         expect(() => ed25519.verify(signature, TEST_VECTOR.message, 'invalid'))
-            .toThrow('publicKey must be a Uint8Array');
+            .toThrow('PublicKey must be a Uint8Array');
         expect(() => ed25519.verify(new Uint8Array(63), TEST_VECTOR.message, publicKey))
-            .toThrow('signature must be 64 bytes');
+            .toThrow('signature of length 64 expected, got 63');
         expect(() => ed25519.verify(signature, TEST_VECTOR.message, new Uint8Array(31)))
-            .toThrow('publicKey must be 32 bytes');
+            .toThrow('publicKey of length 32 expected, got 31');
     });
 
     // Test key and signature sizes

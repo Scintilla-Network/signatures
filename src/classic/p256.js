@@ -6,11 +6,69 @@
 import { p256 as noble } from '@noble/curves/p256';
 import { isUint8Array } from '../utils/types.js';
 
+// Export ProjectivePoint for external use
+export const ProjectivePoint = noble.ProjectivePoint;
+
+// Export curve parameters
+export const CURVE = noble.CURVE;
+
+/**
+ * Utility function to get compact bytes representation
+ * @param {Uint8Array} key - The public key to compress
+ * @returns {Uint8Array} Compressed public key
+ */
+export const toCompactBytes = (key) => {
+    const point = ProjectivePoint.fromHex(key);
+    return point.toRawBytes(true);
+};
+
 /**
  * NIST P-256 (prime256v1) signatures
  * @namespace p256
  */
 export const p256 = {
+    ProjectivePoint,
+    CURVE,
+    /**
+     * Check if a value is a valid private key
+     * @param {Uint8Array} privateKey - Value to check
+     * @returns {boolean} True if value is a valid private key
+     */
+    isValidPrivateKey(privateKey) {
+        if (!isUint8Array(privateKey)) return false;
+        if (privateKey.length !== 32) return false;
+        try {
+            return noble.utils.isValidPrivateKey(privateKey);
+        } catch {
+            return false;
+        }
+    },
+
+    /**
+     * Check if a value is a valid public key
+     * @param {Uint8Array} publicKey - Value to check
+     * @returns {boolean} True if value is a valid public key
+     */
+    isValidPublicKey(publicKey) {
+        if (!isUint8Array(publicKey)) return false;
+        try {
+            return ProjectivePoint.fromHex(publicKey) instanceof ProjectivePoint;
+        } catch {
+            return false;
+        }
+    },
+
+    /**
+     * Convert a point to compact 33-byte representation
+     * @param {Uint8Array} point - 65-byte uncompressed point
+     * @returns {Uint8Array} 33-byte compressed point
+     * @throws {Error} If point is invalid
+     */
+    toCompactBytes(point) {
+        if (!isUint8Array(point)) throw new Error('Point must be Uint8Array');
+        return noble.ProjectivePoint.fromHex(point).toRawBytes(true);
+    },
+
     /**
      * Generate a new private key
      * @param {Uint8Array} [seed] - Optional 32-byte seed for deterministic key generation
