@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { p521 } from './p521.js';
 import { formatMessageHash } from '../utils/format.js';
 

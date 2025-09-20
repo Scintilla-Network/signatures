@@ -28,7 +28,7 @@
     }
   },
   "scripts": {
-    "test": "vitest",
+    "test": "litest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
@@ -56,12 +56,12 @@
   },
   "homepage": "https://github.com/Scintilla-Network/signatures#readme",
   "dependencies": {
-    "@noble/curves": "1.8.1",
-    "@noble/post-quantum": "0.4.0"
+    "@noble/curves": "2.0.0",
+    "@noble/post-quantum": "0.5.1"
   },
   "devDependencies": {
-    "typescript": "5.7.3",
-    "vitest": "3.0.5"
+    "@scintilla-network/litest": "1.2.0"
+
   },
   "engines": {
     "node": ">=18.0.0"

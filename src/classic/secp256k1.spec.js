@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { secp256k1 } from './secp256k1.js';
 import { formatMessageHash } from '../utils/format.js';
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { sphincs256 } from './sphincs256.js';
 import { TEST_VECTOR } from '../test/vectors.js';
 
@@ -93,6 +93,7 @@ describe('SLH-DSA (SPHINCS+)', () => {
 
             // Test key and signature sizes
             it('should generate correct size outputs', () => {
+                // Timeout after 50 seconds
                 const { privateKey, publicKey } = sphincs256.small.generateKeyPair();
                 expect(publicKey.length).toBe(TEST_VECTOR.sphincs256.small.publicKeySize);
                 expect(privateKey.length).toBe(TEST_VECTOR.sphincs256.small.secretKeySize);
@@ -100,6 +101,6 @@ describe('SLH-DSA (SPHINCS+)', () => {
                 const signature = sphincs256.small.sign(TEST_VECTOR.message, privateKey);
                     expect(signature.length).toBe(TEST_VECTOR.sphincs256.small.signatureSize);
                 });
-            });
+            }, 50000);
         });
 }); 

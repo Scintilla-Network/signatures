@@ -3,7 +3,7 @@
  * @typedef {globalThis.Uint8Array} Uint8Array
  */
 
-import { ml_kem768 } from '@noble/post-quantum/ml-kem';
+import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
 import { isUint8Array } from '../utils/types.js';
 
 /**

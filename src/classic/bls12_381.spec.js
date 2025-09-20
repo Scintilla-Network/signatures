@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { bls12_381 as bls } from './bls12_381.js';
 import { utils } from '../utils/index.js';
 const TEST_VECTOR = {

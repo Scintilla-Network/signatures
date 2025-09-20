@@ -4,9 +4,10 @@
  * @typedef {import('../types.js').PrivateKey} PrivateKey
  * @typedef {import('../types.js').Signature} Signature
  * @typedef {import('../types.js').Signing} Signing
+ * @typedef {import('../types.js').WeierstrassPoint} WeierstrassPoint
  */
 
-import { bls12_381 as bls } from '@noble/curves/bls12-381';
+import { bls12_381 as bls } from '@noble/curves/bls12-381.js';
 import { isUint8Array } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 
@@ -34,7 +35,7 @@ export const bls12_381 = {
             }
             return seed;
         }
-        return bls.utils.randomPrivateKey();
+        return bls.utils.randomSecretKey();
     },
 
     /**
@@ -52,42 +53,72 @@ export const bls12_381 = {
     /**
      * Derive public key from private key
      * @param {PrivateKey} privateKey - 32-byte private key
+     * @param {boolean} short - Whether to return a short public key
      * @returns {PublicKey} 48-byte public key
      * @throws {Error} If private key is invalid
      */
-    getPublicKey(privateKey) {
+    getPublicKey(privateKey, short = false) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return bls.getPublicKey(privateKey);
+        const namespace = short ? bls.shortSignatures : bls.longSignatures;
+        return namespace.getPublicKey(privateKey).toBytes();
     },
 
     /**
      * Sign a message
-     * @param {Bytes} message - Message to sign
+     * @param {Bytes | WeierstrassPoint} message - Message to sign
      * @param {PrivateKey} privateKey - 32-byte private key
+     * @param {object} options - Options
+     * @param {boolean} options.short - Whether to return a short public key
+     * @param {boolean} options.hash - Whether to hash the message
      * @returns {Signature} 96-byte signature
      * @throws {Error} If inputs are invalid
      */
-    sign(message, privateKey) {
+    sign(message, privateKey, options) {
+        if(!options){
+            options = { short: false, hash: true };
+        }
+        if(!options.short){
+            options.short = false;
+        }
+        if(!options.hash){
+            options.hash = true;
+        }
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return bls.sign(formatMessage(message), privateKey);
+        const namespace = options.short ? bls.shortSignatures : bls.longSignatures;
+        const messageToSign = options.hash ? namespace.hash(message) : message;
+        return namespace.sign(messageToSign, privateKey).toBytes();
+        // return bls.longSignatures.sign(formatMessage(message), privateKey);
+        // return bls.longSignatures.sign(formatMessage(message), privateKey);
     },
 
     /**
      * Verify a signature
      * @param {Signature} signature - 96-byte signature to verify
-     * @param {Bytes} message - Original message
+     * @param {Bytes | WeierstrassPoint} message - Original message
      * @param {PublicKey} publicKey - 48-byte public key
+     * @param {object} options - Options
+     * @param {boolean} options.short - Whether to return a short public key
+     * @param {boolean} options.hash - Whether to hash the message
      * @returns {boolean} True if signature is valid
      * @throws {Error} If inputs are invalid
      */
-    verify(signature, message, publicKey) {
+    verify(signature, message, publicKey, options) {
+        if(!options){
+            options = { short: false, hash: true };
+        }
+        if(!options.short){
+            options.short = false;
+        }
+        if(!options.hash){
+            options.hash = true;
+        }
         if (!isUint8Array(message)) {
             throw new Error('message must be a Uint8Array, use utils.formatMessage() for automatic conversion');
         }
@@ -97,38 +128,59 @@ export const bls12_381 = {
         if (!isUint8Array(publicKey)) {
             throw new Error('publicKey must be a Uint8Array');
         }
-        return bls.verify(signature, formatMessage(message), publicKey);
+        // return bls.longSignatures.verify(signature, formatMessage(message), publicKey);
+        const namespace = options.short ? bls.shortSignatures : bls.longSignatures;
+        const messageToVerify = options.hash ? namespace.hash(message) : message;
+        return namespace.verify(signature, messageToVerify, publicKey);
     },
 
     /**
      * Aggregate signatures
      * @param {Signature[]} signatures - Array of 96-byte signatures to aggregate
+     * @param {object} options - Options
+     * @param {boolean} options.short - Whether to return a short public key
      * @returns {Signature} 96-byte aggregated signature
      * @throws {Error} If inputs are invalid
      */
-    aggregateSignatures(signatures) {
+    aggregateSignatures(signatures, options) {
+        if(!options){
+            options = { short: false };
+        }
+        if(!options.short){
+            options.short = false;
+        }
+        const namespace = options.short ? bls.shortSignatures : bls.longSignatures;
         if (!Array.isArray(signatures)) {
             throw new Error('signatures must be an array');
         }
         if (signatures.some(sig => !isUint8Array(sig))) {
             throw new Error('all signatures must be Uint8Array');
         }
-        return bls.aggregateSignatures(signatures);
+        return namespace.aggregateSignatures(signatures).toBytes();
     },
 
     /**
      * Aggregate public keys
      * @param {PublicKey[]} publicKeys - Array of 48-byte public keys to aggregate
+     * @param {object} options - Options
+     * @param {boolean} options.short - Whether to return a short public key
      * @returns {PublicKey} 48-byte aggregated public key
      * @throws {Error} If inputs are invalid
      */
-    aggregatePublicKeys(publicKeys) {
+    aggregatePublicKeys(publicKeys, options) {
+        if(!options){
+            options = { short: false };
+        }
+        if(!options.short){
+            options.short = false;
+        }
         if (!Array.isArray(publicKeys)) {
             throw new Error('publicKeys must be an array');
         }
         if (publicKeys.some(key => !isUint8Array(key))) {
             throw new Error('all public keys must be Uint8Array');
         }
-        return bls.aggregatePublicKeys(publicKeys);
+        const namespace = options.short ? bls.shortSignatures : bls.longSignatures;
+        return namespace.aggregatePublicKeys(publicKeys).toBytes();
     }
 }; 

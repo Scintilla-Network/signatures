@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { ed25519 } from './ed25519.js';
 import { utils } from '../utils/index.js';
 
@@ -42,7 +42,7 @@ describe('ed25519', () => {
         expect(() => ed25519.sign(TEST_VECTOR.message, 'invalid'))
             .toThrow('privateKey must be a Uint8Array');
         expect(() => ed25519.sign(TEST_VECTOR.message, new Uint8Array(31)))
-            .toThrow('private key of length 32 expected, got 31');
+            .toThrow('"secretKey" expected Uint8Array of length 32, got length=31');
     });
 
     it('should validate verification input', () => {
@@ -56,9 +56,9 @@ describe('ed25519', () => {
         expect(() => ed25519.verify(signature, TEST_VECTOR.message, 'invalid'))
             .toThrow('PublicKey must be a Uint8Array');
         expect(() => ed25519.verify(new Uint8Array(63), TEST_VECTOR.message, publicKey))
-            .toThrow('signature of length 64 expected, got 63');
+            .toThrow('signature" expected Uint8Array of length 64, got length=63');
         expect(() => ed25519.verify(signature, TEST_VECTOR.message, new Uint8Array(31)))
-            .toThrow('publicKey of length 32 expected, got 31');
+            .toThrow('publicKey" expected Uint8Array of length 32, got length=31');
     });
 
     // Test key and signature sizes

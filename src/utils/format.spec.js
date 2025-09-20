@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { formatMessage, formatMessageHash } from './format.js';
 
 describe('Format utilities', () => {

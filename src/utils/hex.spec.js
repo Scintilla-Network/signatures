@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { toHex, fromHex } from './hex.js';
 
 describe('Hex utilities', () => {

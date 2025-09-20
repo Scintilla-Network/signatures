@@ -8,21 +8,20 @@ Provides classical cryptographic signatures with quantum-resistant alternatives.
 
 ## Features
 
-- 🔒 **Classic Signatures**
+- **Classic Signatures**
   - secp256k1 (Bitcoin/Ethereum)
   - ed25519 (EdDSA)
   - BLS12-381 (Aggregatable signatures)
-- 🛡️ **Post-quantum Signatures**
+- **Post-quantum Signatures**
   - ML-DSA/Dilithium (Fast lattice-based)
   - SLH-DSA/SPHINCS+ (Hash-based, conservative)
-- 🔑 **Key Exchange**
+- **Key Exchange**
   - ECDH (Classic elliptic curve)
   - ML-KEM/Kyber (Post-quantum lattice)
-- 🔬 **Security**
+- **Security**
   - Audited implementations
   - NIST-approved algorithms
   - Zero dependencies beyond noble libraries
-
 
 ## Installation
 
@@ -53,6 +52,7 @@ console.log('Signature valid:', isValid); // true
 ### Classic Signatures
 
 #### secp256k1 (Bitcoin/Ethereum)
+
 ```javascript
 import { secp256k1 } from '@scintilla-network/signatures/classic';
 
@@ -66,6 +66,7 @@ const isValid = secp256k1.verify(signature, message, publicKey);
 ```
 
 #### ed25519 (EdDSA)
+
 ```javascript
 import { ed25519 } from '@scintilla-network/signatures/classic';
 
@@ -78,6 +79,7 @@ const isValid = ed25519.verify(signature, message, publicKey);
 ```
 
 #### BLS12-381 (Aggregatable)
+
 ```javascript
 import { bls12_381 } from '@scintilla-network/signatures/classic';
 
@@ -97,9 +99,24 @@ const aggPub = bls12_381.aggregatePublicKeys([keys1.publicKey, keys2.publicKey])
 const isValid = bls12_381.verify(aggSig, message, aggPub);
 ```
 
+BLS supports long and short signatures.
+
+```javascript
+const sig = bls12_381.sign(message, privateKey, { short: true });
+const isValid = bls12_381.verify(sig, message, publicKey, { short: true });
+```
+
+BLS supports automatically hashing the message. Such can be disabled with the `hash` option.
+
+```javascript
+const sig = bls12_381.sign(message, privateKey, { hash: false });
+const isValid = bls12_381.verify(sig, message, publicKey, { hash: false });
+```
+
 ### Message Formats
 
 All signature functions accept messages in multiple formats:
+
 - `Uint8Array`: Raw bytes
 - `string`: UTF-8 encoded text or hex string
 - `object`: Automatically JSON stringified
@@ -137,22 +154,16 @@ const text = toUtf8(utf8Bytes);
 const formatted = formatMessage(message); // works with any format
 ```
 
-## Security Considerations
-
-### Key Storage
-- Never store private keys in plaintext
-- Use secure key derivation for deterministic keys
-- Consider hardware security modules for production
-
-### Message Formatting
-- Use consistent message formatting
-- Be careful with hex string inputs
-- Validate message lengths where required
-
 ### Post-quantum Security
+
 - Classic signatures are not quantum-resistant
 - Consider using PQ signatures for long-term security
-- Follow NIST recommendations for algorithm selection
+
+## Related Packages
+
+- [@scintilla-network/hashes](https://github.com/Scintilla-Network/hashes): Hashes, KDFs, utilities
+- [@scintilla-network/ciphers](https://github.com/Scintilla-Network/ciphers): Ciphers encryption and decryption
+- [@scintilla-network/mnemonic](https://github.com/Scintilla-Network/mnemonic): Mnemonics phrase generation and derivation
 
 ## License
 
@@ -161,7 +172,8 @@ MIT License - see the [LICENSE](LICENSE) file for details
 ## Credits
 
 This library builds upon the excellent work of:
+
 - [noble-curves](https://github.com/paulmillr/noble-curves) by Paul Miller
 - [noble-post-quantum](https://github.com/paulmillr/noble-post-quantum) by Paul Miller
 
-Both libraries are audited and maintained with support from various blockchain foundations.
+Both libraries are audited and maintained with support from various blockchain foundations. A big thank for their contributions to the crypto community.

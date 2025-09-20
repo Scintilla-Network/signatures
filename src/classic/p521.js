@@ -3,7 +3,7 @@
  * @typedef {globalThis.Uint8Array} Uint8Array
  */
 
-import { p521 as noble } from '@noble/curves/p521';
+import { p521 as noble } from '@noble/curves/nist.js';
 import { isUint8Array } from '../utils/types.js';
 
 // Export ProjectivePoint for external use
@@ -75,7 +75,7 @@ export const p521 = {
             // Use seed directly as private key after validation
             return seed;
         }
-        return noble.utils.randomPrivateKey();
+        return noble.utils.randomSecretKey();
     },
 
     /**
@@ -108,7 +108,7 @@ export const p521 = {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return noble.sign(message, privateKey).toCompactRawBytes();
+        return noble.sign(message, privateKey, { format: 'compact' });
     },
 
     /**

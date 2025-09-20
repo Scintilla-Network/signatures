@@ -6,7 +6,7 @@
  * @typedef {import('../types.js').Signing} Signing
  */
 
-import { ed25519 as ed } from '@noble/curves/ed25519';
+import { ed25519 as ed } from '@noble/curves/ed25519.js';
 import { isUint8Array } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 
@@ -79,7 +79,7 @@ export const ed25519 = {
             }
             return seed;
         }
-        return ed.utils.randomPrivateKey();
+        return ed.utils.randomSecretKey();
     },
 
     /**

@@ -5,6 +5,7 @@ export type Signature = Bytes;
 export type SharedSecret = Bytes;
 export type ProjectivePoint = any;
 export type ExtendedPoint = any;
+export type WeierstrassPoint = any;
 
 
 export interface KeyGeneration {

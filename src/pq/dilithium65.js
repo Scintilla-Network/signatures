@@ -6,7 +6,7 @@
  * @typedef {import('../types.js').Signing} Signing
  */
 
-import { ml_dsa65 } from '@noble/post-quantum/ml-dsa';
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import { isUint8Array } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 
@@ -77,7 +77,7 @@ export const dilithium65 = {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return ml_dsa65.sign(privateKey, formatMessage(message));
+        return ml_dsa65.sign(formatMessage(message), privateKey);
     },
 
     /**
@@ -98,6 +98,6 @@ export const dilithium65 = {
         if (!isUint8Array(publicKey)) {
             throw new Error('publicKey must be a Uint8Array');
         }
-        return ml_dsa65.verify(publicKey, formatMessage(message), signature);
+        return ml_dsa65.verify(signature, formatMessage(message), publicKey);
     }
 }; 

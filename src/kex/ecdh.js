@@ -3,7 +3,7 @@
  * @typedef {globalThis.Uint8Array} Uint8Array
  */
 
-import { x25519 } from '@noble/curves/ed25519';
+import { x25519 } from '@noble/curves/ed25519.js';
 import { isUint8Array } from '../utils/types.js';
 
 /**
@@ -27,7 +27,7 @@ export const ecdh = {
             }
             return seed;
         }
-        return x25519.utils.randomPrivateKey();
+        return x25519.utils.randomSecretKey();
     },
 
     /**

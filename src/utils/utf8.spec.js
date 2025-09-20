@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
+// import { describe, it, expect } from '../../../litest/src/index.js';
 import { toUtf8, fromUtf8 } from './utf8.js';
 
 describe('UTF-8 utilities', () => {

@@ -6,7 +6,8 @@
  * @typedef {import('../types.js').Signing} Signing
  */
 
-import { secp256k1 as secp } from '@noble/curves/secp256k1';
+import { secp256k1 as secp } from '@noble/curves/secp256k1.js';
+// import { bits2octets } from '@noble/curves/abstract/utils';
 import { isUint8Array, isHexString } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 import { toHex, fromHex } from '../utils/hex.js';
@@ -80,7 +81,7 @@ export const secp256k1 = {
             }
             return seed;
         }
-        return secp.utils.randomPrivateKey();
+        return secp.utils.randomSecretKey();
     },
 
     /**
@@ -127,7 +128,7 @@ export const secp256k1 = {
             if (!isUint8Array(privateKey)) {
                 throw new Error('privateKey must be a Uint8Array');
             }
-            return secp.sign(formattedMessage, privateKey).toCompactRawBytes();
+            return secp.sign(formattedMessage, privateKey, { format: 'compact' });
         } catch (error) {
             if (error && typeof error === 'object' && 'message' in error && error.message === 'Invalid hex') {
                 throw new Error('Message must be a string, Uint8Array, or JSON object');
@@ -162,6 +163,17 @@ export const secp256k1 = {
             if (!isUint8Array(publicKey)) {
                 throw new Error('publicKey must be a Uint8Array');
             }
+            // if (formattedMessage.length > 8192) {
+            //     const chunks = [];
+            //     const hashes = []
+            //     for (let i = 0; i < formattedMessage.length; i += 8192) {
+            //         chunks.push(formattedMessage.subarray(i, i + 8192));
+            //     }
+            //     for (const chunk of chunks) {
+            //         hashes.push(secp.sign(chunk, privateKey));
+            //     }
+            //     return secp.verify(signature, Uint8Array.from(hashes), publicKey);
+            // }
             return secp.verify(signature, formattedMessage, publicKey);
         } catch (error) {
             if (error && typeof error === 'object' && 'message' in error && error.message === 'Invalid hex') {

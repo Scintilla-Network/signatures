@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@scintilla-network/litest';
 import { isHexString, isUint8Array } from './types.js';
 
-describe('Type checking utilities', () => {
-    describe('isHexString', () => {
+describe('isHexString', () => {
+        describe('Type checking utilities', () => {
         it('should return true for valid hex strings', () => {
             expect(isHexString('0123456789abcdef')).toBe(true);
             expect(isHexString('0123456789ABCDEF')).toBe(true);

@@ -6,18 +6,18 @@
  * @typedef {import('../types.js').Signing} Signing
  */
 
-import { slh_dsa_sha2_256f as sphincs256f, slh_dsa_sha2_256s as sphincs256s } from '@noble/post-quantum/slh-dsa';
+import { slh_dsa_sha2_256f as sphincs256f, slh_dsa_sha2_256s as sphincs256s } from '@noble/post-quantum/slh-dsa.js';
 import { isUint8Array } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 
 /**
  * Create a SPHINCS+ instance with given variant
  * @param {{
- *   keygen: (seed: Uint8Array) => { publicKey: Uint8Array, privateKey: Uint8Array },
- *   sign: (privateKey: Uint8Array, message: Uint8Array) => Uint8Array,
- *   verify: (publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array) => boolean
+ *   keygen: (seed: Uint8Array) => { publicKey: Uint8Array, secretKey: Uint8Array },
+ *   sign: (message: Uint8Array, privateKey: Uint8Array) => Uint8Array,
+ *   verify: (signature: Uint8Array, message: Uint8Array, publicKey: Uint8Array) => boolean
  * }} variant - SPHINCS+ variant to use
- * @returns {Signing} SPHINCS+ signing interface
+ * @returns {Signing} SPHINCS+ signing interface    
  */
 const createSphincs = (variant) => ({
     /**
@@ -79,7 +79,7 @@ const createSphincs = (variant) => ({
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return variant.sign(privateKey, formatMessage(message));
+        return variant.sign(formatMessage(message), privateKey);
     },
 
     /**
@@ -100,7 +100,7 @@ const createSphincs = (variant) => ({
         if (!isUint8Array(publicKey)) {
             throw new Error('publicKey must be a Uint8Array');
         }
-        return variant.verify(publicKey, formatMessage(message), signature);
+        return variant.verify(signature, formatMessage(message), publicKey);
     }
 });
 
