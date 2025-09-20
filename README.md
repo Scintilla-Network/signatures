@@ -151,7 +151,7 @@ const utf8Bytes = fromUtf8("Hello");
 const text = toUtf8(utf8Bytes);
 
 // Automatic message formatting
-const formatted = formatMessage(message); // works with any format
+const formatted = formatMessage(message); 
 ```
 
 ### Post-quantum Security
