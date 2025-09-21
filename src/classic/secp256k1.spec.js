@@ -44,8 +44,8 @@ describe('secp256k1', () => {
         const publicKey = secp256k1.getPublicKey(secp256k1.generatePrivateKey());
         const signature = new Uint8Array(64);
         // We allows both of those tests now
-        // expect(() => secp256k1.verify('invalid', TEST_VECTOR.messageHash, publicKey))
-            // .toThrow('signature must be a Uint8Array');
+        expect(() => secp256k1.verify('invalid', TEST_VECTOR.messageHash, publicKey))
+            .toThrow('signature must be a Uint8Array');
         // expect(() => secp256k1.verify(new Uint8Array(31), signature, publicKey))
             // .toThrow('message must be 32 bytes');
         expect(() => secp256k1.verify(signature, 'invalid hex', publicKey))

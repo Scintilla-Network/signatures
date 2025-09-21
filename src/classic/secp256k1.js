@@ -7,16 +7,21 @@
  */
 
 import { secp256k1 as secp } from '@noble/curves/secp256k1.js';
+
 // import { bits2octets } from '@noble/curves/abstract/utils';
 import { isUint8Array, isHexString } from '../utils/types.js';
 import { formatMessage } from '../utils/format.js';
 import { toHex, fromHex } from '../utils/hex.js';
 
-// Export ProjectivePoint for external use
-export const ProjectivePoint = secp.ProjectivePoint;
+// Export Point for external use
+export const Point = secp.Point;
 
 // Export curve parameters
-export const CURVE = secp.CURVE;
+export const CURVE = {
+    ...secp.Point.CURVE(),
+    Base: secp.Point.BASE,
+    Fp: secp.Point.Fp,
+  };
 
 /**
  * Utility function to get compact bytes representation
@@ -24,8 +29,9 @@ export const CURVE = secp.CURVE;
  * @returns {Uint8Array} Compressed public key
  */
 export const toCompactBytes = (key) => {
-    const point = ProjectivePoint.fromHex(key);
-    return point.toRawBytes(true);
+    const point = Point.fromBytes(key);
+    const isCompressed = true;
+    return point.toBytes(isCompressed);
 };
 
 /**
@@ -34,8 +40,8 @@ export const toCompactBytes = (key) => {
  * @namespace secp256k1
  */
 export const secp256k1 = {
-    ProjectivePoint,
-    CURVE: secp.CURVE,
+    Point,
+    CURVE,
     /**
      * Check if a value is a valid private key
      * @param {Uint8Array} privateKey - Value to check
@@ -45,7 +51,7 @@ export const secp256k1 = {
         if (!isUint8Array(privateKey)) return false;
         if (privateKey.length !== 32) return false;
         try {
-            return secp.utils.isValidPrivateKey(privateKey);
+            return secp.utils.isValidSecretKey(privateKey);
         } catch {
             return false;
         }
@@ -59,7 +65,7 @@ export const secp256k1 = {
     isValidPublicKey(publicKey) {
         if (!isUint8Array(publicKey)) return false;
         try {
-            return ProjectivePoint.fromHex(publicKey) instanceof ProjectivePoint;
+            return Point.fromBytes(publicKey) instanceof Point;
         } catch {
             return false;
         }
@@ -99,14 +105,15 @@ export const secp256k1 = {
     /**
      * Derive public key from private key
      * @param {PrivateKey} privateKey - 32-byte private key
+     * @param {boolean} isCompressed - Whether to return a compressed public key
      * @returns {PublicKey} 33-byte compressed public key
      * @throws {Error} If private key is invalid
      */
-    getPublicKey(privateKey) {
+    getPublicKey(privateKey, isCompressed = true) {
         if (!isUint8Array(privateKey)) {
             throw new Error('privateKey must be a Uint8Array');
         }
-        return secp.getPublicKey(privateKey);
+        return secp.getPublicKey(privateKey, isCompressed);
     },
 
     /**
